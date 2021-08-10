@@ -3,9 +3,12 @@ package co.com.cognito.ops;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminConfirmSignUpRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminUpdateUserAttributesRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthFlowType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpRequest;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +66,27 @@ public class CognitoService implements AuthService {
                 "adminConfirmResp", adminConfirmationResponse,
                 "adminUpdate", updateUserAtt
         );
+    }
+
+    @Override
+    public Map<String, Object> signIn(SignIn signIn) {
+        Map<String, String> authParams = Map.of("USERNAME", signIn.getUsername(),
+                "PASSWORD", signIn.getPassword());
+        InitiateAuthRequest initAuthFlowReq = InitiateAuthRequest
+                .builder()
+                .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+                .clientId(userPoolClientId)
+                .authParameters(authParams)
+                .build();
+        var result = CLIENT_FACTORY.client().initiateAuth(initAuthFlowReq).authenticationResult();
+        Map<String, Object> response = new HashMap<>();
+        response.put("accessToken", result.accessToken());
+        response.put("expiresIn", result.expiresIn());
+        response.put("idToken", result.idToken());
+        response.put("refreshToken", result.refreshToken());
+        response.put("tokenType", result.tokenType());
+        response.put("deviceMetaData", result.newDeviceMetadata());
+        return response;
     }
 
     public Collection<AttributeType> attributeTypes(Map<String, String> attributesAndValues) {

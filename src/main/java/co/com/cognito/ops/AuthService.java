@@ -5,12 +5,14 @@ import java.util.Map;
 
 public interface AuthService {
 
-    Map<String, Object> signUp(SignUp signUp);
-
-    static Map<String, AuthService> factory(){
+    static Map<String, AuthService> factory() {
         Map<String, AuthService> clients = new HashMap<>();
         clients.put("cognito", CognitoService.create());
         return clients;
     }
+
+    Map<String, Object> signUp(SignUp signUp);
+
+    Map<String, Object> signIn(SignIn signIn);
 
 }
